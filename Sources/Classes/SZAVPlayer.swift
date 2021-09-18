@@ -96,6 +96,8 @@ public class SZAVPlayer: UIView {
         let time = CMTimeGetSeconds(currentItem.currentTime())
         return time.isSafe() ? time : 0
     }
+    
+    public var enableFadeOut: Bool = false
 
     private(set) public var playerLayer: AVPlayerLayer?
     private(set) public var player: AVPlayer?
@@ -313,7 +315,7 @@ extension SZAVPlayer {
 
         handlePlayerStatus(status: .loading)
 
-        playerItem = AVPlayerItem(asset: asset)
+        playerItem = handleFadeOut(asset)
         if let playerItem = playerItem {
             addVideoOutput()
             player.replaceCurrentItem(with: playerItem)
@@ -637,7 +639,7 @@ extension SZAVPlayer {
     private func createPlayer(asset: AVURLAsset) {
         handlePlayerStatus(status: .loading)
 
-        playerItem = AVPlayerItem(asset: asset)
+        playerItem = handleFadeOut(asset)
         addVideoOutput()
         player = AVPlayer(playerItem: playerItem)
         player?.isMuted = isMuted
@@ -703,4 +705,33 @@ private extension Float64 {
         return true
     }
 
+}
+
+extension SZAVPlayer {
+    private func handleFadeOut(_ asset: AVAsset) -> AVPlayerItem {
+        if !enableFadeOut {
+            return AVPlayerItem(asset: asset)
+        }
+        let duration = asset.duration
+        let durationInSeconds = CMTimeGetSeconds(duration)
+        
+        let item = AVPlayerItem(asset: asset)
+        let params = AVMutableAudioMixInputParameters(track: asset.tracks.first! as AVAssetTrack)
+        
+        //for fade in
+        //let firstSecond = CMTimeRangeMake(CMTimeMakeWithSeconds(0, 1), CMTimeMakeWithSeconds(1, 1))
+        let lastSecond = CMTimeRangeMake(start: CMTimeMakeWithSeconds(durationInSeconds-1, preferredTimescale: 1), duration: CMTimeMakeWithSeconds(1, preferredTimescale: 1))
+        
+        //for fade in
+        //params.setVolumeRampFromStartVolume(0, toEndVolume: 1, timeRange: firstSecond)
+        
+        //fade out
+        params.setVolumeRamp(fromStartVolume: 1, toEndVolume: 0, timeRange: lastSecond)
+        
+        let mix = AVMutableAudioMix()
+        mix.inputParameters = [params]
+        item.audioMix = mix
+        
+        return item
+    }
 }
