@@ -709,6 +709,7 @@ private extension Float64 {
 
 extension SZAVPlayer {
     private func handleFadeOut(_ asset: AVAsset) -> AVPlayerItem {
+        guard let firstTrack = asset.tracks.first else { return AVPlayerItem(asset: asset) }
         if !enableFadeOut {
             return AVPlayerItem(asset: asset)
         }
@@ -716,7 +717,7 @@ extension SZAVPlayer {
         let durationInSeconds = CMTimeGetSeconds(duration)
         
         let item = AVPlayerItem(asset: asset)
-        let params = AVMutableAudioMixInputParameters(track: asset.tracks.first! as AVAssetTrack)
+        let params = AVMutableAudioMixInputParameters(track: firstTrack)
         
         //for fade in
         //let firstSecond = CMTimeRangeMake(CMTimeMakeWithSeconds(0, 1), CMTimeMakeWithSeconds(1, 1))
