@@ -112,6 +112,12 @@ public class SZAVPlayer: UIView {
 
     private var urlAsset: AVURLAsset?
     private var assetLoader: SZAVPlayerAssetLoader?
+    
+    //for cache next media to play
+    private var cacheConfig: SZAVPlayerConfig = SZAVPlayerConfig.default
+    private var cacheAssetLoader: SZAVPlayerAssetLoader?
+    private var cachedAsset: AVURLAsset?
+    
     private var isObserverAdded: Bool = false
 
     private var timeObserver: Any?
@@ -155,6 +161,16 @@ public class SZAVPlayer: UIView {
 extension SZAVPlayer {
 
     // MARK: Public
+    
+    //methods to cache next media to play----------------------
+    public func prepareAssetCacheLoader(config: SZAVPlayerConfig) {
+        guard let url = URL(string: config.urlStr) else { return }
+        cacheConfig = config
+        cacheAssetLoader = createAssetLoader(url: url, uniqueID: config.uniqueID, config: config)
+        cacheAssetLoader!.loadAsset(disableCustomLoading: config.disableCustomLoading) { [weak self] (asset) in
+            self?.cachedAsset = asset
+        }
+    }
 
     /// Setup player with specific url, after successfully loading, the player status will change to ready to play.
     /// - Parameters:
@@ -170,16 +186,28 @@ extension SZAVPlayer {
         self.config = config
         isReadyToPlay = false
         currentURLStr = config.urlStr
-        let assetLoader = createAssetLoader(url: url, uniqueID: config.uniqueID, config: config)
-        assetLoader.loadAsset(disableCustomLoading: config.disableCustomLoading) { (asset) in
+                
+        if let cachedAsset = self.cachedAsset, let cacheAssetLoader = self.cacheAssetLoader {
             if let _ = self.player {
-                self.replacePalyerItem(asset: asset)
+                self.replacePalyerItem(asset: cachedAsset)
             } else {
-                self.createPlayer(asset: asset)
+                self.createPlayer(asset: cachedAsset)
             }
-        }
+            self.assetLoader = cacheAssetLoader
+            self.cachedAsset = nil
+            self.cacheAssetLoader = nil
+        } else {
+            let assetLoader = createAssetLoader(url: url, uniqueID: config.uniqueID, config: config)
+            assetLoader.loadAsset(disableCustomLoading: config.disableCustomLoading) { (asset) in
+                if let _ = self.player {
+                    self.replacePalyerItem(asset: asset)
+                } else {
+                    self.createPlayer(asset: asset)
+                }
+            }
 
-        self.assetLoader = assetLoader
+            self.assetLoader = assetLoader
+        }
     }
 
     /// Replace playerItem with new urlStr and uniqueID.
