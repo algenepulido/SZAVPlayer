@@ -177,6 +177,8 @@ extension SZAVPlayer {
     ///   - config: The config to setup player properly.
     public func setupPlayer(config: SZAVPlayerConfig) {
         guard let url = URL(string: config.urlStr) else { return }
+        let center = NotificationCenter.default
+        center.removeObserver(self, name: Notification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
 
         if let _ = player, let oldAssetLoader = assetLoader {
             oldAssetLoader.cleanup()
@@ -348,6 +350,8 @@ extension SZAVPlayer {
             addVideoOutput()
             player.replaceCurrentItem(with: playerItem)
             addPlayerItemObserver(playerItem: playerItem)
+            let center = NotificationCenter.default
+            center.addObserver(self, selector: #selector(handlePlayToEnd(_:)), name: Notification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
         }
     }
 
