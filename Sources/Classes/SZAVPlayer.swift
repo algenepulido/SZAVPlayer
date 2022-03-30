@@ -25,6 +25,7 @@ public enum SZAVPlayerStatus: Int {
     case playbackStalled
     case bufferBegin
     case bufferEnd
+    case seekCompleted
 }
 
 /// AVPlayer remote command, e.g. playback related operations from the lock screen. You can
@@ -314,6 +315,7 @@ extension SZAVPlayer {
             }
 
             if let completion = completion {
+                self?.handlePlayerStatus(status: .seekCompleted)
                 completion(finished)
             }
         }
