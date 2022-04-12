@@ -11,6 +11,7 @@ import AVKit
 public struct SZAVPlayerConfig {
 
     public var urlStr: String           // The URL value for playing.
+    public var isLocalFileUrlStr: Bool = false //set to true if the urlStr is from local file
     public var uniqueID: String?        // The uniqueID to identify wether they are the same audio. If set to nil will use urlStr to create one.
     public var isVideo: Bool            // Is video or not.
     public var isVideoOutputEnabled: Bool           // Output video image function enabled or not.

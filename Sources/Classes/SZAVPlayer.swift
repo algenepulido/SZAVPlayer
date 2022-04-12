@@ -165,7 +165,7 @@ extension SZAVPlayer {
     
     //methods to cache next media to play----------------------
     public func prepareAssetCacheLoader(config: SZAVPlayerConfig) {
-        guard let url = URL(string: config.urlStr) else { return }
+        guard let url = config.isLocalFileUrlStr ? URL(fileURLWithPath: config.urlStr) : URL(string: config.urlStr) else { return }
         cacheConfig = config
         cacheAssetLoader = createAssetLoader(url: url, uniqueID: config.uniqueID, config: config)
         cacheAssetLoader!.loadAsset(disableCustomLoading: config.disableCustomLoading) { [weak self] (asset) in
@@ -177,7 +177,7 @@ extension SZAVPlayer {
     /// - Parameters:
     ///   - config: The config to setup player properly.
     public func setupPlayer(config: SZAVPlayerConfig) {
-        guard let url = URL(string: config.urlStr) else { return }
+        guard let url = config.isLocalFileUrlStr ? URL(fileURLWithPath: config.urlStr) : URL(string: config.urlStr) else { return }
         let center = NotificationCenter.default
         center.removeObserver(self, name: Notification.Name.AVPlayerItemDidPlayToEndTime, object: nil)
 
