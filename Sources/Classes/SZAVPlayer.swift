@@ -514,15 +514,15 @@ extension SZAVPlayer {
         case SZPlayerLoadedTimeRanges:
             handleLoadedTimeRanges(playerItem: playerItem)
         case SZPlayerPlaybackBufferEmpty:
-            //if isReadyToPlay {
+            if isReadyToPlay {
                 isBufferBegin = true
                 handlePlayerStatus(status: .bufferBegin)
-            //}
+            }
         case SZPlayerPlaybackLikelyToKeepUp:
-            //if isReadyToPlay && isBufferBegin {
+            if isReadyToPlay && isBufferBegin {
                 isBufferBegin = false
                 handlePlayerStatus(status: .bufferEnd)
-            //}
+            }
         default:
             break
         }
